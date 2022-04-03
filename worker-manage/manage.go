@@ -10,7 +10,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"noob-tools/util"
 	"time"
 )
 
@@ -87,15 +86,15 @@ func (qw *Worker) workerGo(id string) {
 }
 
 func (qw *Worker) handleRun(id string, handle WorkerHandle) {
-	util.NewExecuteTimeTotal().Auto(func() {
-		defer func() {
-			e := recover()
-			if e != nil {
-				qw.Config.Log.Println(id, "Worker Panic:", qw.Config.WorkerName, e)
-			}
-		}()
-		handle(qw)
-	}, func(total int64) {
-		qw.Config.Log.Println(id, "Worker End:", qw.Config.WorkerName, " Time", total, "ms")
-	})
+	startTime := time.Now()
+	defer func() {
+		e := recover()
+		if e != nil {
+			qw.Config.Log.Println(id, "Worker Panic:", qw.Config.WorkerName, e)
+		}
+	}()
+	handle(qw)
+	totalTime := time.Now().Sub(startTime).Milliseconds()
+	qw.Config.Log.Println(id, "Worker End:", qw.Config.WorkerName, " Time", totalTime, "ms")
+
 }
